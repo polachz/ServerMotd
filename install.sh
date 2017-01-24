@@ -42,12 +42,29 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 #at first make original files non executable
+#we will call necessary files by wrepper script
 
 chmod 644 /etc/update-motd.d/*
 
+# copy new files
 cp ./00-welcome /etc/update-motd.d/
 cp ./10-sysinfo /etc/update-motd.d/
 cp ./80-wrapper /etc/update-motd.d/
 cp ./warn-msg /etc/update-motd.d/
 
+# now change owners and set executable rights
+
+chmod 755 /etc/update-motd.d/00-welcome
+chmod 755 /etc/update-motd.d/10-sysinfo
+chmod 755 /etc/update-motd.d/80-wrapper 
+chmod 644 /etc/update-motd.d/warn-msg 
+
+chown root:root /etc/update-motd.d/00-welcome
+chown root:root /etc/update-motd.d/10-sysinfo
+chown root:root /etc/update-motd.d/80-wrapper
+chown root:root /etc/update-motd.d/warn-msg
+
+echo
+echo "Installation of the ServerMotd finished"
+echo
 

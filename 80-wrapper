@@ -33,6 +33,8 @@
 
 #==============================================================================
 
+MOTD_DIR="/etc/update-motd.d"
+
 indent()
 {
    if [ ! -z "$1" ]; then 
@@ -42,28 +44,30 @@ indent()
       done 
    fi
 }
-if [ -f ./90-updates-available ]; then 
-   MYWRP_UPDATES=`. ./90-updates-available`
+
+if [ -f "$MOTD_DIR/90-updates-available" ]; then 
+   MYWRP_UPDATES=`. "$MOTD_DIR/90-updates-available"`
    indent "$MYWRP_UPDATES"
 fi
-if [ -f ./91-release-upgrade ]; then
-   MYWRP_UPDATES=`. ./91-release-upgrade`
+if [ -f "$MOTD_DIR/91-release-upgrade" ]; then
+   MYWRP_UPDATES=`. "$MOTD_DIR/91-release-upgrade"`
    indent "$MYWRP_UPDATES"
 fi
-if [ -f ./97-overlayroot ]; then
-   MYWRP_UPDATES=`. ./97-overlayroot`
+if [ -f "$MOTD_DIR/97-overlayroot" ]; then
+   MYWRP_UPDATES=`. "$MOTD_DIR/97-overlayroot"`
    indent "$MYWRP_UPDATES"
 fi
-if [ -f ./98-fsck-at-reboot ]; then
-   MYWRP_UPDATES=`. ./98-fsck-at-reboot`
+if [ -f "$MOTD_DIR/98-fsck-at-reboot" ]; then
+   MYWRP_UPDATES=`. "$MOTD_DIR/98-fsck-at-reboot"`
    indent "$MYWRP_UPDATES"
 fi
-if [ -f ./98-reboot-required ]; then
-   MYWRP_UPDATES=`. ./98-reboot-required`
+if [ -f "$MOTD_DIR/98-reboot-required" ]; then
+   MYWRP_UPDATES=`. "$MOTD_DIR/98-reboot-required"`
    indent "$MYWRP_UPDATES"
 fi
 unset MYWRP_UPDATES
-if [ -f ./warn-msg ]; then
-   . ./warn-msg
+if [ -f "$MOTD_DIR/warn-msg" ]; then
+   . "$MOTD_DIR/warn-msg"
 fi
+unset MOTD_DIR
 
