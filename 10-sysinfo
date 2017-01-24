@@ -1,0 +1,89 @@
+#!/bin/sh
+
+#title           :10-sysinfo
+#description     :dumps info about system resources usage
+#author          :zdenek polach ( https://github.com/polachz )
+#date            :24.01.2017
+#version         :0.1
+#usage           :called as part of Message of the day generator
+#notes           :
+#==============================================================================
+#
+# MIT License
+#
+# Copyright (c) 2017 Zdenek Polach
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+#==============================================================================
+
+underline=`tput smul`
+nounderline=`tput rmul`
+
+DATE=$(date)
+COLUMNS=$(tput cols)
+CENTER_SIZE=62
+
+UPTIME_DAYS=$(expr `cat /proc/uptime | cut -d '.' -f1` % 31556926 / 86400)
+UPTIME_HOURS=$(expr `cat /proc/uptime | cut -d '.' -f1` % 31556926 % 86400 / 3600)
+UPTIME_MINUTES=$(expr `cat /proc/uptime | cut -d '.' -f1` % 31556926 % 86400 % 3600 / 60)
+
+MEMORY_TOTAL=$(free -m | head -n 2 | tail -n 1 | awk {'print $2'}) 
+MEMORY_USED=$(free -m | head -n 2 | tail -n 1 | awk {'print $3'})
+MEMORY_FREE=$(free -m | head -n 2 | tail -n 1 | awk {'print $4'})
+SWAP_TOTAL=$(free -m | tail -n 1 | awk {'print $2'})
+SWAP_USED=$(free -m | tail -n 1 | awk {'print $3'})
+SWAP_FREE=$(free -m | tail -n 1 | awk {'print $4'})
+
+IP4_ADDRESS=$(ifconfig eth0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}')
+IP6_ADDRESS=$(ifconfig eth0 | grep "Scope:Global" | xargs | cut -d' ' -f 3)
+
+DISK_ROOT_TOTAL=$(df -h / | awk '{ a = $2 } END { print a }')
+DISK_ROOT_USED=$(df -h / | awk '{ a = $3 } END { print a }')
+DISK_ROOT_FREE=$(df -h / | awk '{ a = $4 } END { print a }')
+DISK_SRV_TOTAL=$(df -h /srv | awk '{ a = $2 } END { print a }')
+DISK_SRV_USED=$(df -h /srv | awk '{ a = $3 } END { print a }')
+DISK_SRV_FREE=$(df -h /srv | awk '{ a = $4 } END { print a }')
+
+SYSTEM_NAME=$( /bin/hostname -f )
+DISTRO_NAME=$(lsb_release -s -d)
+KERNEL_VERSION=$(uname -r)
+
+CPU_TYPE=$(cat /proc/cpuinfo | grep 'model name' | head -1 | cut -d':' -f2 | xargs)
+CPU_LOAD=$(cat /proc/loadavg | awk '{print $1 ", " $2 ", " $3}' )
+
+SYS_INFO_TEXT=$(printf "Now is: %s" "$DATE")
+printf "\t%s\n"  "$SYS_INFO_TEXT"
+printf "\t%${CENTER_SIZE}s\n" | tr ' ' -
+
+printf "\tUptime:\t%03d days, %02d:%02d hours | CPU Load:    %s\n" $UPTIME_DAYS $UPTIME_HOURS $UPTIME_MINUTES "$CPU_LOAD"
+printf "\t%${CENTER_SIZE}s\n" | tr ' ' -
+#iprintf "\tCPU Type: %s\n" "$CPU_TYPE"
+#printf "\tCPU Load: %s\n\n" "$CPU_LOAD"
+
+#printf "\tIPv4 Address:\t%s\n" "$IP4_ADDRESS"
+#printf "\tIPv6 Address:\t%s\n\n" "$IP6_ADDRESS"
+HEADER=$(printf "\t\t%5s\t%5s\t%5s | \t%5s\t%5s\t%5s\n" "Used" "Total" "Free" "Used" "Total" "Free")
+
+#echo "${underline}$HEADER${nounderline}"
+echo "$HEADER"
+printf "\t%${CENTER_SIZE}s\n" | tr ' ' -
+printf "\tMemory:\t%4sM\t%4sM\t%4sM | Swap:\t%4sM\t%4sM\t%4sM\n" $MEMORY_USED $MEMORY_TOTAL $MEMORY_FREE $SWAP_USED $SWAP_TOTAL $SWAP_FREE
+printf "\t/root: \t%5s\t%5s\t%5s | /srv:  \t%5s\t%5s\t%5s\n" $DISK_ROOT_USED $DISK_ROOT_TOTAL $DISK_ROOT_FREE $DISK_SRV_USED $DISK_SRV_TOTAL $DISK_SRV_FREE
+printf "\t%${CENTER_SIZE}s" | tr ' ' -
